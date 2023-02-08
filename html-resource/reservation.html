@@ -14,19 +14,16 @@
       integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
       crossorigin="anonymous"
     />
-    <style>
-      .my-footer {
-        height: 5em;
-        background-color: #163b65;
-        margin-top: 1.5em;
-        padding: 1em;
-        color: #ffffff;
-        font-size: 80%;
-      }
-      .img-size {
-        max-width: 50%;
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.2.0/dist/css/datepicker.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://unpkg.com/notie/dist/notie.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css" />
   </head>
   <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
     <div class="container-fluid">
@@ -103,46 +100,46 @@
       <div class="col-md-3"></div>
       <div class="col-md-6 mx-4">
         <h1 class="text-center mt-4">Search for Availability</h1>
-        <form action="reservation.html" method="GET">
+        <form
+          action="reservation.html"
+          method="GET"
+          novalidate
+          class="needs-validation mt-4"
+        >
           <div class="row">
             <div class="col">
-              <div class="form-group">
-                <label for="start_date" class="form-label">Starting Date</label>
-                <input
-                  required
-                  type="date"
-                  class="form-control"
-                  id="start_date"
-                  aria-describedby="startDateHelp"
-                  name="start_date"
-                />
-                <div id="startDateHelp" class="form-text">
-                  Enter your starting date in the form of DD-MM-YYYY.
+              <div class="row" id="reservation-dates">
+                <div class="col">
+                  <input
+                    required
+                    type="text"
+                    name="start"
+                    class="form-control"
+                    placeholder="Arrival"
+                  />
                 </div>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="end_date" class="form-label">Ending Date</label>
-                <input
-                  required
-                  type="date"
-                  class="form-control"
-                  id="end_date"
-                  aria-describedby="startDateHelp"
-                  name="end_date"
-                />
-                <div id="emailHelp" class="form-text">
-                  Enter your ending date in the form of DD-MM-YYYY.
+                <div class="col">
+                  <input
+                    required
+                    type="text"
+                    name="end"
+                    class="form-control"
+                    placeholder="Departure"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary mt-4">
+          <hr />
+
+          <button type="submit" class="btn btn-primary">
             Search Availability
           </button>
         </form>
+        <button type="submit" class="btn btn-primary" id="colorButton">
+          Test
+        </button>
       </div>
     </div>
     <div class="row my-footer">
@@ -156,5 +153,183 @@
       integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.2.0/dist/js/datepicker-full.min.js"></script>
+    <script src="https://unpkg.com/notie"></script>
+    <script src="
+    https://cdn.jsdelivr.net/npm/sweetalert2@11.7.1/dist/sweetalert2.all.min.js
+    "></script>
+    <script>
+      let attention = prompt()
+      ;(function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        let forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener(
+            'submit',
+            function (event) {
+              if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+              }
+
+              form.classList.add('was-validated')
+            },
+            false
+          )
+        })
+      })()
+
+      document
+        .getElementById('colorButton')
+        .addEventListener('click', function () {
+          // notify('This is my message', 'success');
+          let html = `
+            <form
+              id="check-availability-form"
+              action=""
+              method="post"
+              novalidate
+              class="needs-validation"
+            >
+              <div class="row">
+                <div class="col-auto">
+                  <div class="row" id="reservation-dates-modal">
+                    <div class="col-auto">
+                      <input
+                        disabled
+                        required
+                        class="form-control"
+                        type="text"
+                        name="start"
+                        id="start"
+                        placeholder="Arrival"
+                      />
+                    </div>
+                    <div class="col">
+                      <input
+                      disabled
+                        required
+                        class="form-control"
+                        type="text"
+                        name="end"
+                        id="end"
+                        placeholder="Depature"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          `
+          attention.custom({ msg: html, title: 'Choose your date' })
+        })
+
+      const elem = document.getElementById('reservation-dates')
+      const rangepicker = new DateRangePicker(elem, {
+        // ...options
+        orientation: 'right',
+      })
+
+      function notify(msg, msgType) {
+        notie.alert({
+          type: msgType,
+          text: msg,
+        })
+      }
+
+      function notifyModal(title, text, icon, confirmButtonText) {
+        Swal.fire({
+          title: title,
+          html: text,
+          icon: icon,
+          confirmButtonText: confirmButtonText,
+        })
+      }
+
+      function prompt() {
+        let toast = function (c) {
+          const { msg = '', icon = 'success', position = 'top-end' } = c
+          const Toast = Swal.mixin({
+            toast: true,
+            title: msg,
+            position: position,
+            icon: icon,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.addEventListener('start', Swal.stopTimer)
+              toast.addEventListener('end', Swal.resumeTimer)
+            },
+          })
+
+          Toast.fire({})
+        }
+
+        let success = function (c) {
+          const { msg = '', title = '', footer = '' } = c
+          Swal.fire({
+            icon: 'success',
+            title: title,
+            text: msg,
+            footer: footer,
+          })
+        }
+
+        let error = function (c) {
+          const { msg = '', title = '', footer = '' } = c
+          Swal.fire({
+            icon: 'error',
+            title: title,
+            text: msg,
+            footer: footer,
+          })
+        }
+
+        async function custom(c) {
+          const { msg = '', title = '' } = c
+
+          const { value: formValues } = await Swal.fire({
+            title: title,
+            html: msg,
+            backdrop: false,
+            focusConfirm: false,
+            showCancelButton: true,
+            willOpen: () => {
+              const elem = document.getElementById('reservation-dates-modal')
+              const rp = new DateRangePicker(elem, {
+                showOnFocus: true,
+                orientation: 'top',
+                format: 'dd-mm-yyyy',
+              })
+            },
+            preConfirm: () => {
+              return [
+                document.getElementById('start').value,
+                document.getElementById('end').value,
+              ]
+            },
+            didOpen: () => {
+              document.getElementById('start').removeAttribute('disabled')
+              document.getElementById('end').removeAttribute('disabled')
+            },
+          })
+
+          if (formValues) {
+            Swal.fire(JSON.stringify(formValues))
+          }
+        }
+        return {
+          toast: toast,
+          success: success,
+          error: error,
+          custom: custom,
+        }
+      }
+    </script>
   </body>
 </html>
