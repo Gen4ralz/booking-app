@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gen4ralz/booking-app/pkg/config"
@@ -56,6 +58,25 @@ func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
 
 func (m *Repository) Availability (res http.ResponseWriter,req *http.Request) {
 	render.RenderTemplate(res,req, "search-availability.gohtml", &models.TemplateData{})
+}
+
+type jsonResponse struct {
+	OK 			bool		`json:"ok"`
+	Message 	string		`json:"message"`
+}
+
+func (m *Repository) AvailabilityJSON (res http.ResponseWriter,req *http.Request) {
+	resp := jsonResponse {
+		OK: true,
+		Message: "Available!",
+	}
+	json,err := json.MarshalIndent(resp,"","     ")
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(string(json))
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(json)
 }
 
 func (m *Repository) PostAvailability (res http.ResponseWriter,req *http.Request) {
