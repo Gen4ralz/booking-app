@@ -1,0 +1,86 @@
+{{template "layout" .}}
+{{define "content"}}
+   <div class="container">
+      <div class="row">
+        <div class="col">
+          <img
+            src="/static/images/marjors-suite.png"
+            alt="room-image"
+            class="img-fluid mx-auto d-block img-size mt-4"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col mx-4">
+          <h1 class="text-center mt-4">Major's Suite</h1>
+          <p>
+            Lorem Ipsum is simply dummy text of the printing and typesetting
+            industry. Lorem Ipsum has been the industry's standard dummy text
+            ever since the 1500s, when an unknown printer took a galley of type
+            and scrambled it to make a type specimen book. It has survived not
+            only five centuries, but also the leap into electronic typesetting,
+            remaining essentially unchanged. It was popularised in the 1960s
+            with the release of Letraset sheets containing Lorem Ipsum passages,
+            and more recently with desktop publishing software like Aldus
+            PageMaker including versions of Lorem Ipsum.
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div id="check-availability-button" class="col text-center">
+          <a href="#!" class="btn btn-success"
+            >Check Available</a
+          >
+        </div>
+      </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+    <script>
+        document
+        .getElementById('check-availability-button')
+        .addEventListener('click', function () {
+          // notify('This is my message', 'success');
+          let html = `
+            <form
+              id="check-availability-form"
+              action=""
+              method="post"
+              novalidate
+              class="needs-validation"
+            >
+              <div class="row">
+                <div class="col-auto">
+                  <div class="row" id="reservation-dates-modal">
+                    <div class="col-auto">
+                      <input
+                        disabled
+                        required
+                        class="form-control"
+                        type="text"
+                        name="start"
+                        id="start"
+                        placeholder="Arrival"
+                      />
+                    </div>
+                    <div class="col">
+                      <input
+                      disabled
+                        required
+                        class="form-control"
+                        type="text"
+                        name="end"
+                        id="end"
+                        placeholder="Depature"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          `;
+          attention.custom({ msg: html, title: 'Choose your date' });
+        });
+    </script>
+{{end}}

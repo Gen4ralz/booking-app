@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gen4ralz/booking-app/pkg/config"
@@ -8,40 +9,61 @@ import (
 	"github.com/gen4ralz/booking-app/pkg/render"
 )
 
-// Repository  is the repository type
 type Repository struct {
 	App *config.AppConfig
 }
 
-// Repo the repository used by the handlers
 var Repo *Repository
 
-// NewRepo creates a new repository
 func NewRepo(a *config.AppConfig) *Repository {
-	return &Repository{App: a}
+	return &Repository{a}
 }
 
-// NewHandlers sets the repository for the handlers
-func NewHandler(r *Repository) {
+func NewHandler(r *Repository){
 	Repo = r
 }
 
-func (m *Repository) HomePage(res http.ResponseWriter,req *http.Request){
-	remoteIP := req.RemoteAddr
-	m.App.Session.Put(req.Context(), "remote_ip", remoteIP)
-	render.RenderTemplate(res, "home.gohtml", &models.TemplateData{})
+func (m *Repository)HomePage(res http.ResponseWriter, req *http.Request){ 
+	remoteIp := req.RemoteAddr
+	m.App.Session.Put(req.Context(), "remote_ip", remoteIp)
+	render.RenderTemplate(res,req, "home.gohtml", &models.TemplateData{})
 }
 
-func (m *Repository) About(res http.ResponseWriter,req *http.Request){
-	// perform some logic
+func (m *Repository)About(res http.ResponseWriter, req *http.Request) {
 	stringMap := make(map[string]string)
 	stringMap["test"] = "Hello, again."
 
 	remoteIp := m.App.Session.GetString(req.Context(), "remote_ip")
 	stringMap["remote_ip"] = remoteIp
 
-	// send the data to the template
-	render.RenderTemplate(res, "about.gohtml", &models.TemplateData{
+
+	render.RenderTemplate(res,req, "about.gohtml", &models.TemplateData{
 		StringMap: stringMap,
 	})
+}
+
+func (m *Repository) Generals (res http.ResponseWriter,req *http.Request) {
+	render.RenderTemplate(res,req, "generals.gohtml", &models.TemplateData{})
+}
+
+func (m *Repository) Majors (res http.ResponseWriter,req *http.Request) {
+	render.RenderTemplate(res,req, "majors.gohtml", &models.TemplateData{})
+}
+
+func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
+	render.RenderTemplate(res,req, "reservation.gohtml", &models.TemplateData{})
+}
+
+func (m *Repository) Availability (res http.ResponseWriter,req *http.Request) {
+	render.RenderTemplate(res,req, "search-availability.gohtml", &models.TemplateData{})
+}
+
+func (m *Repository) PostAvailability (res http.ResponseWriter,req *http.Request) {
+	start := req.FormValue("start")
+	end := req.FormValue("end")
+	res.Write([]byte(fmt.Sprintf("start date is %s, end date is %s", start, end)))
+}
+
+func (m *Repository) Contact (res http.ResponseWriter,req *http.Request) {
+	render.RenderTemplate(res,req, "contact.gohtml", &models.TemplateData{})
 }

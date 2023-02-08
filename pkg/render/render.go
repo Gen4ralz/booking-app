@@ -9,44 +9,38 @@ import (
 
 	"github.com/gen4ralz/booking-app/pkg/config"
 	"github.com/gen4ralz/booking-app/pkg/models"
+	"github.com/justinas/nosurf"
 )
-
-// var functions = template.FuncMap{}
 
 var app *config.AppConfig
 
-// NewTemplates sets the config for the template package
-func NewTemplates(a *config.AppConfig) {
+func NewTemplates(a *config.AppConfig){
 	app = a
 }
 
-func AddDefaultData(td *models.TemplateData) *models.TemplateData{
+func AddDefaultData(td *models.TemplateData, req *http.Request) *models.TemplateData{
+	td.CSRFToken = nosurf.Token(req)
 	return td
 }
 
-func RenderTemplate(res http.ResponseWriter, tpl string, td *models.TemplateData){
+func RenderTemplate(res http.ResponseWriter, req *http.Request,tpl string, td *models.TemplateData) {
+
 	var tc map[string]*template.Template
-	// because in development mode we prefer to re-read template from disk of every request.
-	// But in production mode we need to use cache template
-	if app.UseCache {
+	if app.UseCache{
 		tc = app.TemplateCache
 	} else {
 		tc,_ = CreateTemplateCache()
 	}
-	// get the template cache from the app config
-	//Instead of creating the template cache, let's just use it.
-	// tc := app.TemplateCache
-
 
 	// get requested template from cache
 	t, ok := tc[tpl]
 	if !ok {
-		log.Fatal("could not get template from template cache")
+		log.Fatal("Could not get template from template cache")
 	}
 
 	buf := new(bytes.Buffer)
 
-	td = AddDefaultData(td)
+	td = AddDefaultData(td, req)
 
 	_ = t.Execute(buf,td)
 
@@ -55,6 +49,7 @@ func RenderTemplate(res http.ResponseWriter, tpl string, td *models.TemplateData
 	if err != nil {
 		log.Println(err)
 	}
+
 }
 
 func CreateTemplateCache()(map[string]*template.Template, error){
