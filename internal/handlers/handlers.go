@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gen4ralz/booking-app/pkg/config"
-	"github.com/gen4ralz/booking-app/pkg/models"
-	"github.com/gen4ralz/booking-app/pkg/render"
+	"github.com/gen4ralz/booking-app/internal/config"
+	"github.com/gen4ralz/booking-app/internal/models"
+	"github.com/gen4ralz/booking-app/internal/render"
 )
 
 type Repository struct {
@@ -74,7 +74,6 @@ func (m *Repository) AvailabilityJSON (res http.ResponseWriter,req *http.Request
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(string(json))
 	res.Header().Set("Content-Type", "application/json")
 	res.Write(json)
 }
