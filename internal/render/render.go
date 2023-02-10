@@ -2,6 +2,7 @@ package render
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -12,7 +13,10 @@ import (
 	"github.com/justinas/nosurf"
 )
 
+var functions = template.FuncMap{}
+
 var app *config.AppConfig
+var pathToTemplate = "./templates"
 
 func NewTemplates(a *config.AppConfig){
 	app = a
@@ -60,7 +64,7 @@ func CreateTemplateCache()(map[string]*template.Template, error){
 	myCache := map[string]*template.Template{}
 
 	// get all of the files named *.gohtml from ./templates
-	pages, err := filepath.Glob("./templates/*.gohtml")
+	pages, err := filepath.Glob(fmt.Sprintf("%s/*.gohtml", pathToTemplate))
 	if err != nil {
 		return myCache,err
 	}
@@ -70,18 +74,18 @@ func CreateTemplateCache()(map[string]*template.Template, error){
 		name := filepath.Base(page)
 
 		//ts = template set
-		ts, err := template.New(name).ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return myCache, err
 		}
 
-		matches, err := filepath.Glob("./templates/*.layout.gohtml")
+		matches, err := filepath.Glob(fmt.Sprintf("%s/*.layout.gohtml", pathToTemplate))
 		if err != nil {
 			return myCache, err
 		}
 
 		if len(matches) > 0 {
-			ts, err = ts.ParseGlob("./templates/*.layout.gohtml")
+			ts, err = ts.ParseGlob(fmt.Sprintf("%s/*.layout.gohtml", pathToTemplate))
 			if err != nil {
 				return myCache, err
 			}
