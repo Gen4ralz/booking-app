@@ -161,6 +161,18 @@
         });
       }
 
+      {{with .Error}}
+      notify("{{.}}", "error")
+      {{end}}
+
+      {{with .Flash}}
+      notify("{{.}}", "success")
+      {{end}}
+
+       {{with .Warning}}
+      notify("{{.}}", "warning")
+      {{end}}
+
       function prompt() {
         let toast = function (c) {
           const { msg = '', icon = 'success', position = 'top-end' } = c;

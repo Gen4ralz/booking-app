@@ -92,7 +92,12 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 			Form: form,
 			Data: data,
 		})
+		return
 	}
+
+	m.App.Session.Put(req.Context(), "reservation", reservation)
+
+	http.Redirect(res, req, "/reservation-summary", http.StatusSeeOther)
 }
 
 func (m *Repository) Availability (res http.ResponseWriter,req *http.Request) {
@@ -125,4 +130,23 @@ func (m *Repository) PostAvailability (res http.ResponseWriter,req *http.Request
 
 func (m *Repository) Contact (res http.ResponseWriter,req *http.Request) {
 	render.RenderTemplate(res,req, "contact.gohtml", &models.TemplateData{})
+}
+
+func (m *Repository) ReservationSummary (res http.ResponseWriter,req *http.Request) {
+	// models.Reservation is a type
+	reservation, ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
+	if !ok {
+		log.Println("cannot get item from session")
+		m.App.Session.Put(req.Context(), "error", "Can't get reservation from session")
+		http.Redirect(res,req,"/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	m.App.Session.Remove(req.Context(), "reservation")
+
+	data := make(map[string]interface{})
+	data["reservation"] = reservation
+	render.RenderTemplate(res,req, "reservation-summary.gohtml", &models.TemplateData{
+		Data: data,
+	})
 }
