@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gen4ralz/booking-app/internal/config"
@@ -57,32 +57,28 @@ func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
 
 func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request) {
 	err := req.ParseForm()
-
-	err = errors.New("this is an error message")
 	if err != nil {
-		helpers.ServerError(res, err)
+		log.Println(err)
 		return
 	}
 
 	reservation := models.Reservation{
 		FirstName: req.FormValue("first_name"),
-		LastName: req.FormValue("last_name"),
-		Email: req.FormValue("email"),
-		Phone: req.FormValue("phone"),
+		LastName:  req.FormValue("last_name"),
+		Email:     req.FormValue("email"),
+		Phone:     req.FormValue("phone"),
 	}
 
 	form := forms.New(req.PostForm)
 
-	// form.Has("first_name", req)
-	form.Required("first_name", "last_name", "email", "phone")
+	form.Required("first_name", "last_name", "email")
 	form.MinLength("first_name", 3, req)
 	form.IsEmail("email")
 
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
-
-		render.RenderTemplate(res,req, "reservation.gohtml", &models.TemplateData{
+		render.RenderTemplate(res, req, "reservation.gohtml", &models.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -90,7 +86,6 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 	}
 
 	m.App.Session.Put(req.Context(), "reservation", reservation)
-
 	http.Redirect(res, req, "/reservation-summary", http.StatusSeeOther)
 }
 
@@ -129,9 +124,9 @@ func (m *Repository) Contact (res http.ResponseWriter,req *http.Request) {
 
 func (m *Repository) ReservationSummary (res http.ResponseWriter,req *http.Request) {
 	// models.Reservation is a type
-	reservation, ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
+	reservation,ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
 	if !ok {
-		m.App.ErrorLog.Panicln("Can't get error from session")
+		m.App.ErrorLog.Println("Can't get error from session")
 		m.App.Session.Put(req.Context(), "error", "Can't get reservation from session")
 		http.Redirect(res,req,"/", http.StatusTemporaryRedirect)
 		return
