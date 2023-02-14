@@ -8,3 +8,4 @@
 *.sln
 *.sw?
 .env
+database.yml
