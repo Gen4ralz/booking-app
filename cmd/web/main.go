@@ -46,6 +46,9 @@ func main(){
 func run() (*driver.DB,error) {
 // what am I goinf to put in the session
 gob.Register(models.Reservation{})
+gob.Register(models.User{})
+gob.Register(models.Room{})
+gob.Register(models.Restriction{})
 //check this to true when in production
 app.InProduction = false
 
@@ -83,7 +86,7 @@ app.UseCache = false
 repo := handlers.NewRepo(&app, db)
 handlers.NewHandler(repo)
 //give render package can access to config
-render.NewTemplates(&app)
+render.NewRenderer(&app)
 helpers.NewHelpers(&app)
 
 	return db, nil

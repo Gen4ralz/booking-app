@@ -35,20 +35,20 @@ func NewHandler(r *Repository){
 }
 
 func (m *Repository)HomePage(res http.ResponseWriter, req *http.Request){ 
-	render.RenderTemplate(res,req, "home.gohtml", &models.TemplateData{})
+	render.Template(res,req, "home.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository)About(res http.ResponseWriter, req *http.Request) {
 
-	render.RenderTemplate(res,req, "about.gohtml", &models.TemplateData{})
+	render.Template(res,req, "about.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) Generals (res http.ResponseWriter,req *http.Request) {
-	render.RenderTemplate(res,req, "generals.gohtml", &models.TemplateData{})
+	render.Template(res,req, "generals.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) Majors (res http.ResponseWriter,req *http.Request) {
-	render.RenderTemplate(res,req, "majors.gohtml", &models.TemplateData{})
+	render.Template(res,req, "majors.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
@@ -56,7 +56,7 @@ func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
 	data := make(map[string]interface{})
 	data["reservation"] = emptyReservation
 
-	render.RenderTemplate(res,req, "reservation.gohtml", &models.TemplateData{
+	render.Template(res,req, "reservation.gohtml", &models.TemplateData{
 		Form: forms.New(nil),
 		Data: data,
 	})
@@ -85,7 +85,7 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
-		render.RenderTemplate(res, req, "reservation.gohtml", &models.TemplateData{
+		render.Template(res, req, "reservation.gohtml", &models.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -97,7 +97,7 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 }
 
 func (m *Repository) Availability (res http.ResponseWriter,req *http.Request) {
-	render.RenderTemplate(res,req, "search-availability.gohtml", &models.TemplateData{})
+	render.Template(res,req, "search-availability.gohtml", &models.TemplateData{})
 }
 
 type jsonResponse struct {
@@ -126,7 +126,7 @@ func (m *Repository) PostAvailability (res http.ResponseWriter,req *http.Request
 }
 
 func (m *Repository) Contact (res http.ResponseWriter,req *http.Request) {
-	render.RenderTemplate(res,req, "contact.gohtml", &models.TemplateData{})
+	render.Template(res,req, "contact.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) ReservationSummary (res http.ResponseWriter,req *http.Request) {
@@ -143,7 +143,7 @@ func (m *Repository) ReservationSummary (res http.ResponseWriter,req *http.Reque
 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
-	render.RenderTemplate(res,req, "reservation-summary.gohtml", &models.TemplateData{
+	render.Template(res,req, "reservation-summary.gohtml", &models.TemplateData{
 		Data: data,
 	})
 }
