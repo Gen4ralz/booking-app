@@ -7,20 +7,27 @@ import (
 	"net/http"
 
 	"github.com/gen4ralz/booking-app/internal/config"
+	"github.com/gen4ralz/booking-app/internal/driver"
 	"github.com/gen4ralz/booking-app/internal/forms"
 	"github.com/gen4ralz/booking-app/internal/helpers"
 	"github.com/gen4ralz/booking-app/internal/models"
 	"github.com/gen4ralz/booking-app/internal/render"
+	"github.com/gen4ralz/booking-app/internal/repository"
+	"github.com/gen4ralz/booking-app/internal/repository/dbrepo"
 )
 
 type Repository struct {
 	App *config.AppConfig
+	DB repository.DatabaseRepo
 }
 
 var Repo *Repository
 
-func NewRepo(a *config.AppConfig) *Repository {
-	return &Repository{a}
+func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
+	return &Repository{
+		App:a,
+		DB: dbrepo.NewPostgresRepo(db.SQL, a),
+	}
 }
 
 func NewHandler(r *Repository){

@@ -10,6 +10,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/gen4ralz/booking-app/internal/config"
+	"github.com/gen4ralz/booking-app/internal/driver"
 	"github.com/gen4ralz/booking-app/internal/handlers"
 	"github.com/gen4ralz/booking-app/internal/helpers"
 	"github.com/gen4ralz/booking-app/internal/models"
@@ -25,10 +26,12 @@ var errorLog *log.Logger
 
 func main(){
 	
-	err := run()
+	db, err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.SQL.Close()
+
 	fmt.Printf("Starting application on port %s\n", port)
 
 	srv := &http.Server{
@@ -40,7 +43,7 @@ func main(){
 	log.Fatal(err)
 }
 
-func run() error {
+func run() (*driver.DB,error) {
 // what am I goinf to put in the session
 gob.Register(models.Reservation{})
 //check this to true when in production
@@ -60,20 +63,28 @@ session.Cookie.Secure = app.InProduction // encrypt connection from Https, we do
 
 app.Session = session
 
+//connect to database
+log.Println("Connecting to database...")
+db, err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=nattapongpanyaakratham password=")
+if err != nil {
+	log.Fatal("Cannot connect to database!")
+}
+log.Println("Connected to database!")
+
 tc, err := render.CreateTemplateCache()
 if err != nil {
 	log.Fatal("cannot create template cache")
-	return err
+	return nil, err
 }
 
 app.TemplateCache = tc
 app.UseCache = false
 
-repo := handlers.NewRepo(&app)
+repo := handlers.NewRepo(&app, db)
 handlers.NewHandler(repo)
 //give render package can access to config
 render.NewTemplates(&app)
 helpers.NewHelpers(&app)
 
-	return nil
+	return db, nil
 }
