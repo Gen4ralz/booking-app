@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gen4ralz/booking-app/internal/config"
 	"github.com/gen4ralz/booking-app/internal/driver"
@@ -69,17 +71,41 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 		return
 	}
 
+	sd := req.FormValue("start_date")
+	ed := req.FormValue("end_date")
+
+	// 01-01-2020
+	layout := "2006-01-02"
+
+	startDate, err := time.Parse(layout, sd)
+	if err != nil {
+		helpers.ServerError(res, err)
+	}
+
+	endDate, err := time.Parse(layout, ed)
+	if err != nil {
+		helpers.ServerError(res, err)
+	}
+
+	roomID, err := strconv.Atoi(req.FormValue("room_id"))
+	if err != nil {
+		helpers.ServerError(res, err)
+	}
+
 	reservation := models.Reservation{
 		FirstName: req.FormValue("first_name"),
 		LastName:  req.FormValue("last_name"),
 		Email:     req.FormValue("email"),
 		Phone:     req.FormValue("phone"),
+		StartDate: startDate,
+		EndDate: endDate,
+		RoomID: roomID,
 	}
 
 	form := forms.New(req.PostForm)
 
 	form.Required("first_name", "last_name", "email")
-	form.MinLength("first_name", 3, req)
+	form.MinLength("first_name", 3)
 	form.IsEmail("email")
 
 	if !form.Valid() {
@@ -90,6 +116,11 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 			Data: data,
 		})
 		return
+	}
+
+	err = m.DB.InsertReservation(reservation)
+	if err != nil {
+		helpers.ServerError(res, err)
 	}
 
 	m.App.Session.Put(req.Context(), "reservation", reservation)
