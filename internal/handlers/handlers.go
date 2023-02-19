@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 	"github.com/gen4ralz/booking-app/internal/render"
 	"github.com/gen4ralz/booking-app/internal/repository"
 	"github.com/gen4ralz/booking-app/internal/repository/dbrepo"
+	"github.com/go-chi/chi/v5"
 )
 
 type Repository struct {
@@ -80,16 +80,19 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 	startDate, err := time.Parse(layout, sd)
 	if err != nil {
 		helpers.ServerError(res, err)
+		return
 	}
 
 	endDate, err := time.Parse(layout, ed)
 	if err != nil {
 		helpers.ServerError(res, err)
+		return
 	}
 
 	roomID, err := strconv.Atoi(req.FormValue("room_id"))
 	if err != nil {
 		helpers.ServerError(res, err)
+		return
 	}
 
 	reservation := models.Reservation{
@@ -118,9 +121,24 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 		return
 	}
 
-	err = m.DB.InsertReservation(reservation)
+	newReservationID, err := m.DB.InsertReservation(reservation)
 	if err != nil {
 		helpers.ServerError(res, err)
+		return
+	}
+
+	restriction := models.RoomRestriction{
+		StartDate:     startDate,
+		EndDate:       endDate,
+		RoomID:        roomID,
+		ReservationID: newReservationID,
+		RestrictionID: 1,
+	}
+
+	err = m.DB.InsertRoomRestriction(restriction)
+	if err != nil {
+		helpers.ServerError(res, err)
+		return
 	}
 
 	m.App.Session.Put(req.Context(), "reservation", reservation)
@@ -153,7 +171,52 @@ func (m *Repository) AvailabilityJSON (res http.ResponseWriter,req *http.Request
 func (m *Repository) PostAvailability (res http.ResponseWriter,req *http.Request) {
 	start := req.FormValue("start")
 	end := req.FormValue("end")
-	res.Write([]byte(fmt.Sprintf("start date is %s, end date is %s", start, end)))
+
+		// 01-01-2020
+		layout := "2006-01-02"
+
+		startDate, err := time.Parse(layout, start)
+		if err != nil {
+			helpers.ServerError(res, err)
+			return
+		}
+	
+		endDate, err := time.Parse(layout, end)
+		if err != nil {
+			helpers.ServerError(res, err)
+			return
+		}
+
+		rooms, err := m.DB.SearchAvailabilityForAllRooms(startDate, endDate)
+		if err != nil {
+			helpers.ServerError(res, err)
+			return
+		}
+
+		for _, i := range rooms {
+			m.App.InfoLog.Println("ROOM:", i.ID, i.RoomName)
+		}
+
+		if len(rooms) == 0 {
+			// no available
+			m.App.Session.Put(req.Context(), "error", "No availability")
+			http.Redirect(res, req, "/search-availability", http.StatusSeeOther)
+			return
+		}
+
+		data := make(map[string]interface{})
+		data["rooms"] = rooms
+
+		reservation := models.Reservation{
+			StartDate: startDate,
+			EndDate:   endDate,
+		}
+
+		m.App.Session.Put(req.Context(),"reservation", reservation)
+
+		render.Template(res,req, "choose-room.gohtml", &models.TemplateData{
+			Data: data,
+		})
 }
 
 func (m *Repository) Contact (res http.ResponseWriter,req *http.Request) {
@@ -177,4 +240,24 @@ func (m *Repository) ReservationSummary (res http.ResponseWriter,req *http.Reque
 	render.Template(res,req, "reservation-summary.gohtml", &models.TemplateData{
 		Data: data,
 	})
+}
+
+func (m *Repository) ChooseRoom(res http.ResponseWriter,req *http.Request){
+	roomID, err := strconv.Atoi(chi.URLParam(req, "id"))
+	if err != nil {
+		helpers.ServerError(res, err)
+		return
+	}
+
+	reservation, ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
+	if !ok {
+		helpers.ServerError(res, err)
+		return
+	}
+
+	reservation.RoomID = roomID
+
+	m.App.Session.Put(req.Context(), "reservation", reservation)
+
+	http.Redirect(res, req, "/make-reservation", http.StatusSeeOther)
 }
