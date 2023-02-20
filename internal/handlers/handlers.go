@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -54,13 +55,34 @@ func (m *Repository) Majors (res http.ResponseWriter,req *http.Request) {
 }
 
 func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
-	var emptyReservation models.Reservation
+	reservation, ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
+	if !ok {
+		helpers.ServerError(res,errors.New("cannot get reservation from session"))
+		return
+	}
+
+	room,err := m.DB.GetRoomById(reservation.RoomID)
+	if err != nil {
+		helpers.ServerError(res,err)
+		return
+	}
+
+	reservation.Room.RoomName = room.RoomName
+
+	sd := reservation.StartDate.Format("2006-01-02")
+	ed := reservation.EndDate.Format("2006-01-02")
+
+	stringMap  := make(map[string]string)
+	stringMap["start_date"] = sd
+	stringMap["end_date"] = ed
+
 	data := make(map[string]interface{})
-	data["reservation"] = emptyReservation
+	data["reservation"] = reservation
 
 	render.Template(res,req, "reservation.gohtml", &models.TemplateData{
 		Form: forms.New(nil),
 		Data: data,
+		StringMap: stringMap,
 	})
 }
 
