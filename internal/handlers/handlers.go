@@ -54,6 +54,8 @@ func (m *Repository) Majors (res http.ResponseWriter,req *http.Request) {
 	render.Template(res,req, "majors.gohtml", &models.TemplateData{})
 }
 
+
+// Reservation
 func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
 	reservation, ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
 	if !ok {
@@ -68,6 +70,8 @@ func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
 	}
 
 	reservation.Room.RoomName = room.RoomName
+
+	m.App.Session.Put(req.Context(), "reservation", reservation)
 
 	sd := reservation.StartDate.Format("2006-01-02")
 	ed := reservation.EndDate.Format("2006-01-02")
@@ -86,46 +90,24 @@ func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
 	})
 }
 
+//PostReservation
 func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request) {
+	reservation, ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
+	if !ok {
+		helpers.ServerError(res, errors.New("can't get from session"))
+		return
+	}
+
 	err := req.ParseForm()
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	sd := req.FormValue("start_date")
-	ed := req.FormValue("end_date")
-
-	// 01-01-2020
-	layout := "2006-01-02"
-
-	startDate, err := time.Parse(layout, sd)
-	if err != nil {
-		helpers.ServerError(res, err)
-		return
-	}
-
-	endDate, err := time.Parse(layout, ed)
-	if err != nil {
-		helpers.ServerError(res, err)
-		return
-	}
-
-	roomID, err := strconv.Atoi(req.FormValue("room_id"))
-	if err != nil {
-		helpers.ServerError(res, err)
-		return
-	}
-
-	reservation := models.Reservation{
-		FirstName: req.FormValue("first_name"),
-		LastName:  req.FormValue("last_name"),
-		Email:     req.FormValue("email"),
-		Phone:     req.FormValue("phone"),
-		StartDate: startDate,
-		EndDate: endDate,
-		RoomID: roomID,
-	}
+	reservation.FirstName = req.FormValue("first_name")
+	reservation.LastName = req.FormValue("last_name")
+	reservation.Phone = req.FormValue("phone")
+	reservation.Email = req.FormValue("email")
 
 	form := forms.New(req.PostForm)
 
@@ -150,9 +132,9 @@ func (m *Repository) PostReservation (res http.ResponseWriter,req *http.Request)
 	}
 
 	restriction := models.RoomRestriction{
-		StartDate:     startDate,
-		EndDate:       endDate,
-		RoomID:        roomID,
+		StartDate:     reservation.StartDate,
+		EndDate:       reservation.EndDate,
+		RoomID:        reservation.RoomID,
 		ReservationID: newReservationID,
 		RestrictionID: 1,
 	}
@@ -245,6 +227,7 @@ func (m *Repository) Contact (res http.ResponseWriter,req *http.Request) {
 	render.Template(res,req, "contact.gohtml", &models.TemplateData{})
 }
 
+// ReservationSummary
 func (m *Repository) ReservationSummary (res http.ResponseWriter,req *http.Request) {
 	// models.Reservation is a type
 	reservation,ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
@@ -259,8 +242,16 @@ func (m *Repository) ReservationSummary (res http.ResponseWriter,req *http.Reque
 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
+
+	sd := reservation.StartDate.Format("2006-01-02")
+	ed := reservation.EndDate.Format("2006-01-02")
+	stringMap := make(map[string]string)
+	stringMap["start_date"] = sd
+	stringMap["end_date"] = ed
+
 	render.Template(res,req, "reservation-summary.gohtml", &models.TemplateData{
 		Data: data,
+		StringMap: stringMap,
 	})
 }
 
