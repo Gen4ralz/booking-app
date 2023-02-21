@@ -66,13 +66,15 @@ func (m *Repository) Majors (res http.ResponseWriter,req *http.Request) {
 func (m *Repository) Reservation (res http.ResponseWriter,req *http.Request) {
 	reservation, ok := m.App.Session.Get(req.Context(), "reservation").(models.Reservation)
 	if !ok {
-		helpers.ServerError(res,errors.New("cannot get reservation from session"))
+		m.App.Session.Put(req.Context(), "error", "can't get reservation from session")
+		http.Redirect(res,req, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
 	room,err := m.DB.GetRoomById(reservation.RoomID)
 	if err != nil {
-		helpers.ServerError(res,err)
+		m.App.Session.Put(req.Context(), "error", "can't find room")
+		http.Redirect(res,req, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
