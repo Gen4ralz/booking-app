@@ -293,3 +293,35 @@ func (m *Repository) ChooseRoom(res http.ResponseWriter,req *http.Request){
 
 	http.Redirect(res, req, "/make-reservation", http.StatusSeeOther)
 }
+
+func (m *Repository) BookRoom(res http.ResponseWriter, req *http.Request) {
+	// id, s, e
+
+	//convert from string to int
+	roomID, _ := strconv.Atoi(req.URL.Query().Get("id"))
+	sd := req.URL.Query().Get("s")
+	ed := req.URL.Query().Get("e")
+
+	layout := "2006-01-02"
+	startDate, _ := time.Parse(layout, sd)
+	endDate, _ := time.Parse(layout, ed)
+
+	var reservation models.Reservation
+
+	room, err := m.DB.GetRoomById(roomID)
+	if err != nil {
+		helpers.ServerError(res, err)
+		return
+	}
+
+	reservation.Room.RoomName = room.RoomName
+
+	reservation.RoomID = roomID
+	reservation.StartDate = startDate
+	reservation.EndDate = endDate
+
+	m.App.Session.Put(req.Context(), "reservation", reservation)
+
+	log.Println(roomID, startDate, endDate)
+	http.Redirect(res,req, "/make-reservation", http.StatusSeeOther)
+}
