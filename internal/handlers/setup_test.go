@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"testing"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -22,13 +23,7 @@ import (
 
 var functions = template.FuncMap{}
 
-var app config.AppConfig
-var session *scs.SessionManager
-// var infoLog *log.Logger
-// var errorLog *log.Logger 
-var pathToTemplate = "./../../templates"
-
-func getRoutes() http.Handler {
+func TestMain(m *testing.M){
 	gob.Register(models.Reservation{})
 	//check this to true when in production
 	app.InProduction = false
@@ -55,11 +50,23 @@ func getRoutes() http.Handler {
 	app.TemplateCache = tc
 	app.UseCache = true
 	
-	repo := NewRepo(&app)
+	repo := NewTestRepo(&app)
 	NewHandler(repo)
 	//give render package can access to config
 	render.NewRenderer(&app)
+
 	helpers.NewHelpers(&app)
+
+	os.Exit(m.Run())
+}
+
+var app config.AppConfig
+var session *scs.SessionManager
+// var infoLog *log.Logger
+// var errorLog *log.Logger 
+var pathToTemplate = "./../../templates"
+
+func getRoutes() http.Handler {
 
 	mux := chi.NewRouter();
 
