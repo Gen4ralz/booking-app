@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/gen4ralz/booking-app/internal/helpers"
 	"github.com/justinas/nosurf"
 )
 
@@ -30,4 +31,15 @@ func NoSurf(next http.Handler) http.Handler {
 // SessionLoad loads and saves the session on every request
 func SessionLoad(next http.Handler) http.Handler {
 	return session.LoadAndSave(next)
+}
+
+func Auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		if !helpers.IsAuthenticate(req){
+			session.Put(req.Context(), "error", "Log in first")
+			http.Redirect(res,req,"/login", http.StatusSeeOther)
+			return
+		}
+		next.ServeHTTP(res,req)
+	})
 }

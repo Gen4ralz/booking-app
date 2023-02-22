@@ -355,8 +355,14 @@ func (m *Repository) PostLogin(res http.ResponseWriter,req *http.Request) {
 
 	form := forms.New(req.PostForm)
 	form.Required("email", "password")
+	form.IsEmail("email")
+	
 	if !form.Valid() {
 		// take user back to page
+		render.Template(res,req,"login.gohtml", &models.TemplateData{
+			Form: form,
+		})
+		return
 	}
 
 	id, _, err := m.DB.Authenticate(email, password)
