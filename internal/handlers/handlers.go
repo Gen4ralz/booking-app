@@ -334,3 +334,9 @@ func (m *Repository) BookRoom(res http.ResponseWriter, req *http.Request) {
 	log.Println(roomID, startDate, endDate)
 	http.Redirect(res,req, "/make-reservation", http.StatusSeeOther)
 }
+
+func (m *Repository) Login (res http.ResponseWriter,req *http.Request) {
+	render.Template(res,req, "login.gohtml", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+}
