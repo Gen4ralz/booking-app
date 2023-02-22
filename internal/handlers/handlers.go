@@ -340,3 +340,34 @@ func (m *Repository) Login (res http.ResponseWriter,req *http.Request) {
 		Form: forms.New(nil),
 	})
 }
+
+func (m *Repository) PostLogin(res http.ResponseWriter,req *http.Request) {
+	// Anytime you doing login or logout make sure you renew the token
+	_ = m.App.Session.RenewToken(req.Context())
+
+	err := req.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	email := req.FormValue("email")
+	password := req.FormValue("password")
+
+	form := forms.New(req.PostForm)
+	form.Required("email", "password")
+	if !form.Valid() {
+		// take user back to page
+	}
+
+	id, _, err := m.DB.Authenticate(email, password)
+	if err != nil {
+		log.Println(err)
+		m.App.Session.Put(req.Context(), "error", "Invalid login credentials")
+		http.Redirect(res,req, "/login", http.StatusSeeOther)
+		return
+	}
+
+	m.App.Session.Put(req.Context(), "user_id", id)
+	m.App.Session.Put(req.Context(), "flash", "Logged on successfully")
+	http.Redirect(res,req, "/", http.StatusSeeOther)
+}
