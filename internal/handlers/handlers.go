@@ -384,3 +384,7 @@ func (m *Repository) Logout(res http.ResponseWriter, req *http.Request){
 
 	http.Redirect(res,req,"/login", http.StatusSeeOther)
 }
+
+func (m *Repository) AdminDashboard(res http.ResponseWriter,req *http.Request) {
+	render.Template(res,req, "admin-dashboard.gohtml", &models.TemplateData{})
+}
