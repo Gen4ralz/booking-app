@@ -377,3 +377,10 @@ func (m *Repository) PostLogin(res http.ResponseWriter,req *http.Request) {
 	m.App.Session.Put(req.Context(), "flash", "Logged on successfully")
 	http.Redirect(res,req, "/", http.StatusSeeOther)
 }
+
+func (m *Repository) Logout(res http.ResponseWriter, req *http.Request){
+	_ = m.App.Session.Destroy(req.Context())
+	_ = m.App.Session.RenewToken(req.Context())
+
+	http.Redirect(res,req,"/login", http.StatusSeeOther)
+}

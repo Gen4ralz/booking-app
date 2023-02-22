@@ -10,3 +10,4 @@
 .env
 *.out
 database.yml
+bookings

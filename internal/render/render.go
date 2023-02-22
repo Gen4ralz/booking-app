@@ -28,6 +28,9 @@ func AddDefaultData(td *models.TemplateData, req *http.Request) *models.Template
 	td.Error = app.Session.PopString(req.Context(), "error")
 	td.Warning = app.Session.PopString(req.Context(), "warning")
 	td.CSRFToken = nosurf.Token(req)
+	if app.Session.Exists(req.Context(), "user_id") {
+		td.IsAuthenticated = 1
+	}
 	return td
 }
 
