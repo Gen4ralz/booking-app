@@ -212,3 +212,53 @@ func (m *postgresDBRepo) Authenticate(email, testPassword string)(int,string,err
 
 	return id, hashedPassword, nil
 }
+
+// AllReservations returns a slice of all reservations 
+func(m *postgresDBRepo) AllReservations() ([]models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 3)
+	defer cancel()
+
+	var reservations []models.Reservation
+
+	query := `
+			select r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date,
+			r.end_date, r.room_id, r.created_at, r.updated_at, rm.id, rm.room_name
+			from reservations r
+			left join rooms rm on (r.room_id = rm.id)
+			order by r.start_date asc
+`
+
+	row,err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return reservations, err
+	}
+	defer row.Close()
+	
+	for row.Next() {
+		var i models.Reservation
+		err := row.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.Phone,
+			&i.StartDate,
+			&i.EndDate,
+			&i.RoomID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Room.ID,
+			&i.Room.RoomName,
+		)
+
+		if err != nil {
+			return reservations, nil
+		}
+		reservations = append(reservations, i)
+		err = row.Err()
+		if err != nil {
+			return reservations,err
+		}
+	}
+	return reservations, nil
+}

@@ -8,19 +8,27 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/gen4ralz/booking-app/internal/config"
 	"github.com/gen4ralz/booking-app/internal/models"
 	"github.com/justinas/nosurf"
 )
 
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"humanDate": HumanDate,
+}
 
 var app *config.AppConfig
 var pathToTemplate = "./templates"
 
 func NewRenderer(a *config.AppConfig){
 	app = a
+}
+
+// HumanDate return time in YYYY-MM-DD format
+func HumanDate(t time.Time) string {
+	return t.Format("2006-01-02")
 }
 
 func AddDefaultData(td *models.TemplateData, req *http.Request) *models.TemplateData{

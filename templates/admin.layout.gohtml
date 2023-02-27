@@ -24,7 +24,11 @@
     <link
       rel="shortcut icon"
       href="/static/admin/images/favicon.png" />
-
+    <style>
+      .content-wrapper {
+        background: white;
+      }
+    </style>
     {{block "css" .}}
 
     {{
@@ -92,7 +96,7 @@
               </div>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/admin/reservation-calendar">
+              <a class="nav-link" href="/admin/reservations-calendar">
                 <i class="ti-layout-list-post menu-icon"></i>
                 <span class="menu-title">Reservation Calendar</span>
               </a>
@@ -123,10 +127,11 @@
         </div>
       </div>
     </div>
-      <!-- plugins:js -->
+  <!-- plugins:js -->
   <script src="/static/admin/vendors/base/vendor.bundle.base.js"></script>
   <!-- endinject -->
   <!-- inject:js -->
+  <script src="/static/admin/js/jquery.cookie.js" type="text/javascript"></script>
   <script src="/static/admin/js/off-canvas.js"></script>
   <script src="/static/admin/js/hoverable-collapse.js"></script>
   <script src="/static/admin/js/template.js"></script>
